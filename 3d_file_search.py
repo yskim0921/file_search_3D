@@ -247,6 +247,7 @@ def extractor_agent(state: AgentState):
     
     return {**state, "keywords": keywords.strip()}
 
+# rag_search_agent 함수 내부의 관련성 계산 부분을 수정
 def rag_search_agent(state: AgentState):
     try:
         vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=EMBEDDINGS)
@@ -276,13 +277,22 @@ def rag_search_agent(state: AgentState):
             cursor.execute("SELECT * FROM documents WHERE id = %s", (doc_id,))
             row = cursor.fetchone()
             if row:
-                relevance = (1 - (score - min_score) / (max_score - min_score)) * 100 if max_score != min_score else 100
+                # 관련성 계산: 0-100% 범위로 정규화한 후 98%로 제한
+                if max_score != min_score:
+                    relevance = (1 - (score - min_score) / (max_score - min_score)) * 100
+                else:
+                    relevance = 100.0
+                
+                # 관련성이 98%를 넘지 않도록 제한
+                relevance = min(relevance, 98.0)
+                
                 search_results_with_metadata.append({
-                    "relevance": round(relevance, 1),
+                    "relevance": round(relevance, 1),  # 소수점 한 자리로 반올림
                     "file_name": row["file_name"],
                     "file_location": row["file_location"],
                     "summary": row["summary"][:100] + "..." if row["summary"] else "요약 없음",
                     "doc_type": row["doc_type"],
+                    "keywords": row["keywords"],
                     "content": content
                 })
         conn.close()
@@ -296,7 +306,6 @@ def rag_search_agent(state: AgentState):
         return {**state, "search_results": search_results_with_metadata, "context": context}
     
     except Exception as e:
-        # 오류 발생 시 터미널에 출력
         print(f"❌ RAG 검색 오류: {e}", file=sys.stderr)
         visualizer.update_search_results([], state["query"]) 
         return {**state, "search_results": [], "context": ""}
@@ -328,7 +337,7 @@ def answer_generator_agent(state: AgentState):
         ### 답변:
         ==최종결론==
         찾은 문서중에 가장 관련이 높은 파일을 찾아주고 자세한 파일내용 설명해줘
-        (순위, 무슨파일인지, 어디에 있는지, 요약은 무엇인지 등)
+        (순위, 무슨파일인지, 어디에 있는지, 요약은 무엇인지, 질문에 포함되는 문서키워드 등)
         """
     )
     chain = prompt | CHAT_LLM | StrOutputParser()
@@ -354,6 +363,7 @@ def result_formatter_agent(state: AgentState):
                 f"📄 파일명: {res['file_name']}\n"
                 f"   📁 위치: {res['file_location']}\n"
                 f"   📝 요약: {res['summary']}\n"
+                f"   🗝️ 키워드: {res['keywords']}\n"
                 f"   🏷️ 유형: {res['doc_type']}\n"
             )
     
@@ -381,7 +391,7 @@ app = graph.compile()
 # 8. 실행 예시 (Python Script Output)
 # ================================================================
 # 1) RAG 파이프라인 실행
-state = {"query": "한문철 TV", "keywords": "", "search_results": [], "context": "", "result": ""}
+state = {"query": "카카오 뱅크 관련 내용", "keywords": "", "search_results": [], "context": "", "result": ""}
 result = app.invoke(state)
 
 # 2) 최종 결과 출력
