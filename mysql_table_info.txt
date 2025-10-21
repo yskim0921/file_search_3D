@@ -1,0 +1,11 @@
+CREATE TABLE documents (
+id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '아이디',
+title VARCHAR(512) NOT NULL COMMENT '제목',
+summary TEXT COMMENT '요약',
+keywords VARCHAR(1024) NOT NULL COMMENT '중요단어',
+file_location TEXT NOT NULL COMMENT '파일위치',
+file_name VARCHAR(255) NOT NULL COMMENT '파일명',
+created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '만든날짜',
+PRIMARY KEY (id),
+KEY idx_created_at (created_at)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='요약문서 테이블';
