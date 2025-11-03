@@ -40,7 +40,7 @@ DB_CONFIG = {
 # ================================================================
 # 3. ChromaDB 및 LLM 설정
 # ================================================================
-CHROMA_PATH = "./rag_chroma/documents/title_summary/"
+CHROMA_PATH = "./rag_chroma/documents/title_summary_test/"
 EMBEDDINGS = OllamaEmbeddings(model="exaone3.5:2.4b")
 LLM = Ollama(model="exaone3.5:2.4b")
 CHAT_LLM = ChatOllama(model="exaone3.5:2.4b", temperature=0.1)
@@ -417,7 +417,7 @@ app = graph.compile()
 # 8. 실행 예시 (.py 스크립트용)
 # ================================================================
 # RAG 파이프라인 실행
-state = {"query": "카카오톡", "keywords": "", "search_results": [], "context": "", "result": ""}
+state = {"query": "1111카카오톡", "keywords": "", "search_results": [], "context": "", "result": ""}
 result = app.invoke(state)
 
 print("\n" + "="*50)

@@ -48,7 +48,7 @@ DB_CONFIG = {
 # ================================================================
 # 3. ChromaDB 및 LLM 설정 (환경에 맞게 수정하세요)
 # ================================================================
-CHROMA_PATH = "./rag_chroma/documents/title_summary/"
+CHROMA_PATH = "./rag_chroma/documents/title_summary_test/"
 EMBEDDINGS = OllamaEmbeddings(model="exaone3.5:2.4b")
 LLM = Ollama(model="exaone3.5:2.4b")
 CHAT_LLM = ChatOllama(model="exaone3.5:2.4b", temperature=0.1)
